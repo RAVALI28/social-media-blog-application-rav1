@@ -1,6 +1,7 @@
 package com.ravali.social_media_blog_app_rav1.Controller;
 
 import com.ravali.social_media_blog_app_rav1.DTO.PostDto;
+import com.ravali.social_media_blog_app_rav1.DTO.PostResponse;
 import com.ravali.social_media_blog_app_rav1.Service.Impl.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,10 +37,26 @@ public class PostController {
            return ResponseEntity.ok(postDtoById);
     }
 
+    //Paginated Get all posts (/api/posts/fetchAllPostsWithPagination)
+    @GetMapping("/fetchAllPostsWithPagination")
+    public PostResponse getAllPostsWithPagination(@RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                                  @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+                                                  @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+                                                  @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir){
+        return postService.getAllPostsWithPagination(pageNo, pageSize, sortBy, sortDir);
+    }
+
     //Put/update the Post by ID (/api/posts/updatePost/{id})
     @PutMapping("/updatePost/{id}")
     public ResponseEntity<PostDto> updatePostById(@RequestBody PostDto postDto, @PathVariable long id){
        return ResponseEntity.ok(postService.updatePostById(postDto, id));
+
+    }
+
+    //Patch/update the Post by ID (/api/posts/updatePostPartially/{id})
+    @PatchMapping("/updatePostPartially/{id}")
+    public ResponseEntity<PostDto> updatePostPartiallyById(@RequestBody PostDto postDto, @PathVariable long id){
+       return ResponseEntity.ok(postService.partialUpdatePostById(postDto, id));
 
     }
 
