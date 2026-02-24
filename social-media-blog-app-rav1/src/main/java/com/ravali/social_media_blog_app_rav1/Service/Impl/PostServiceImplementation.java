@@ -2,13 +2,19 @@ package com.ravali.social_media_blog_app_rav1.Service.Impl;
 
 
 import com.ravali.social_media_blog_app_rav1.DTO.PostDto;
+import com.ravali.social_media_blog_app_rav1.DTO.PostResponse;
 import com.ravali.social_media_blog_app_rav1.Entity.Post;
 import com.ravali.social_media_blog_app_rav1.Exception.ReourceNotFoundException;
 import com.ravali.social_media_blog_app_rav1.Repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImplementation implements PostService {
@@ -94,5 +100,68 @@ public class PostServiceImplementation implements PostService {
         postRepository.delete(postToBeDeleted);
     }
 
+    @Override
+    public PostResponse getAllPostsWithPagination(int pageNo, int pageSize, String sortBy, String sortDir) {
+        //Validate / normalize inputs
+        if(pageNo < 0) pageNo = 0;
+        if(pageSize <= 0) pageSize = 10;
+        if(sortBy == null || sortBy.isBlank())  sortBy = "id";
+        if(sortDir == null) sortDir = "asc";
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Post> postsPage = postRepository.findAll(pageable);
+
+        List<PostDto> content = postsPage.getContent().stream()
+                .map(this::mapEntityToDto)
+                .toList();
+
+        PostResponse response = new PostResponse();
+        response.setContent(content);
+        response.setPageNo(postsPage.getNumber());
+        response.setPageSize(postsPage.getSize());
+        response.setTotalElements(postsPage.getTotalElements());
+        response.setTotalPages(postsPage.getTotalPages());
+        response.setLast(postsPage.isLast());
+        return response;
+    }
+
+    //Utility method
+    private boolean isNotEmpty(String value){
+        return value != null && !value.isBlank();
+    }
+
+    @Override
+    public PostDto partialUpdatePostById(PostDto postDto, long id) {
+
+        Post  existingPost = postRepository.findById(id).orElseThrow(() -> new ReourceNotFoundException("Post", "id", String.valueOf(id)));
+//        if(postDto.getTitle() != null && !postDto.getTitle().isBlank()){
+//            existingPost.setTitle(postDto.getTitle());
+//        }
+//        if(postDto.getDescription() != null && !postDto.getDescription().isBlank()) {
+//            existingPost.setDescription(postDto.getDescription());
+//        }
+//        if(postDto.getContent() != null && !postDto.getContent().isBlank()) {
+//            existingPost.setContent(postDto.getContent());
+//        }
+
+        //Using utility method for above code
+        if(isNotEmpty(postDto.getTitle())){
+            existingPost.setTitle(postDto.getTitle());
+        }
+        if(isNotEmpty(postDto.getDescription())){
+            existingPost.setDescription(postDto.getDescription());
+        }
+        if(isNotEmpty(postDto.getContent())){
+            existingPost.setContent(postDto.getContent());
+        }
+
+
+        postRepository.save(existingPost);
+        return mapEntityToDto(existingPost);
+    }
+
 
 }
+
