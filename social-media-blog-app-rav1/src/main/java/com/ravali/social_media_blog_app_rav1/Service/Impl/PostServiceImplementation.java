@@ -6,6 +6,7 @@ import com.ravali.social_media_blog_app_rav1.DTO.PostResponse;
 import com.ravali.social_media_blog_app_rav1.Entity.Post;
 import com.ravali.social_media_blog_app_rav1.Exception.ReourceNotFoundException;
 import com.ravali.social_media_blog_app_rav1.Repository.PostRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,9 @@ public class PostServiceImplementation implements PostService {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     //Util method to Map Entity to DTO
     private PostDto mapEntityToDto(Post post) {
@@ -147,7 +151,7 @@ public class PostServiceImplementation implements PostService {
 //        }
 
         //Using utility method for above code
-        if(isNotEmpty(postDto.getTitle())){
+  /*      if(isNotEmpty(postDto.getTitle())){
             existingPost.setTitle(postDto.getTitle());
         }
         if(isNotEmpty(postDto.getDescription())){
@@ -157,6 +161,14 @@ public class PostServiceImplementation implements PostService {
             existingPost.setContent(postDto.getContent());
         }
 
+
+        postRepository.save(existingPost);
+        return mapEntityToDto(existingPost);           */
+
+
+        //Use Model mapper to update the PATCH method and checks the nullchecks if the value is null it will not update the value and if the value is not null it will update the value
+        //Using ModelMapper for above code
+        modelMapper.map(postDto, existingPost);
 
         postRepository.save(existingPost);
         return mapEntityToDto(existingPost);
