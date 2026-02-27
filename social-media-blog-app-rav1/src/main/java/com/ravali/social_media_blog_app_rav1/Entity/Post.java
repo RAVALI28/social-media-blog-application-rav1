@@ -3,6 +3,9 @@ package com.ravali.social_media_blog_app_rav1.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,35 +28,12 @@ public class Post {
     @Column(name = "CONTENT")
     private String content;
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
+    //Mapping between Post and Comment (Post to Comment)
+    //we use Set instead of List because we want to avoid duplicate comments for a post
+    //we use cascade = CascadeType.ALL because we want to perform all operations
+         //(create, update, delete) on comments when we perform operations on post
+    //we use orphanRemoval = true because we want to remove comments when we remove post
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+   private Set<Comment> comments = new HashSet<>();
 }
